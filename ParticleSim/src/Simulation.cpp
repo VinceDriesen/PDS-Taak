@@ -17,7 +17,7 @@ Simulation::Simulation(int N)
 }
 
 void Simulation::initializeParticles(int N) {
-  constexpr int index = 1;
+  constexpr int index = 0;
   particles.clear();
   float spacing = Config::diameter; // gebruik de diameter als spacing
   switch (index) {
