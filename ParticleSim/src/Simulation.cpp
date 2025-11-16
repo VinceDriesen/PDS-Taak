@@ -1,4 +1,5 @@
 #include "Simulation.h"
+#include "Config.h"
 #include "ExporterVTK.h"
 
 Simulation::Simulation(int N) {
@@ -11,17 +12,21 @@ Simulation::Simulation(int N) {
     p.vx = p.vy = p.vz = 0.0f;
     particles.push_back(p);
   }
+
+  // Create the bounding box
+  ExporterVTK::saveBoxVTK("data/bounding_box.vtk", Config::xmin, Config::xmax,
+                          Config::ymin, Config::ymax, Config::zmin,
+                          Config::zmax);
 }
 
 void Simulation::update(float dt) {
-  const float gravity = -9.81f;
   for (auto &p : particles) {
-    p.vy += gravity * dt;
+    p.vy += Config::gravity * dt;
     p.x += p.vx * dt;
     p.y += p.vy * dt;
     p.z += p.vz * dt;
 
-    if (p.y < 0.0f) {
+    if (p.y < Config::ymin) {
       p.y = 0.0f;
       p.vy *= -0.6f;
     }

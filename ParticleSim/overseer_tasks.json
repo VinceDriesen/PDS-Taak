@@ -1,0 +1,7 @@
+[
+  {
+    "name": "Build project",
+    "cmd": "cmake -S . -B build && cmake --build build",
+    "cwd": "/home/vince/School/PDS/taak/PDS-Taak/ParticleSim/"
+  }
+]
