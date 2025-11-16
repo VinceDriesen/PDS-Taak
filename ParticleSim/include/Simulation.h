@@ -11,6 +11,7 @@ public:
   void runCPU(int frames, float dt, const std::string &outputFolder);
 
 private:
+  void initializeParticles(int N);
   std::vector<Particle> particles;
   void update(float dt);
 };

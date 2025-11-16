@@ -55,5 +55,13 @@ void ExporterVTK::saveBoxVTK(const std::string &filename, float xmin,
   file << "2 2 6\n";
   file << "2 3 7\n";
 
+  file << "CELL_DATA 12\n";
+  file << "SCALARS lineColor float 1\n";
+  file << "LOOKUP_TABLE default\n";
+
+  for (int i = 0; i < 12; i++) {
+    file << i << "\n";
+  }
+
   file.close();
 }

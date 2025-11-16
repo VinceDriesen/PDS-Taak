@@ -12,6 +12,7 @@ struct Config {
   constexpr static float zmax = 10;
 
   constexpr static float gravity = -9.81;
+  constexpr static float diameter = 0.5;
 };
 
 #endif // CONFIG_H
