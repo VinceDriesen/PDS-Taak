@@ -1,5 +1,6 @@
 #include "ExporterVTK.h"
 #include <fstream>
+#include <iostream>
 
 void ExporterVTK::saveVTKFile(const std::vector<Particle> &particles,
                               const std::string &folder, const int frame) {
@@ -11,11 +12,20 @@ void ExporterVTK::saveVTKFile(const std::vector<Particle> &particles,
   file << "Particle simulation\n";
   file << "ASCII\n";
   file << "DATASET POLYDATA\n";
-  file << "POINTS " << particles.size() << " float\n";
 
+  file << "POINTS " << particles.size() << " float\n";
   for (const auto &p : particles) {
     file << p.x << " " << p.y << " " << p.z << "\n";
   }
+
+  // Voeg kleuren toe
+  file << "POINT_DATA " << particles.size() << "\n";
+  file << "COLOR_SCALARS particleColor 3\n";
+  for (const auto &p : particles) {
+    file << p.r << " " << p.g << " " << p.b << "\n";
+  }
+
+  file.close();
 }
 
 void ExporterVTK::saveBoxVTK(const std::string &filename, float xmin,
