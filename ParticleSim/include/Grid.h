@@ -10,6 +10,10 @@ public:
        float zmin, float zmax);
 
   void build(const std::vector<Particle> &particles);
+  std::vector<std::vector<int>> getCells() const { return cells; }
+  int getNx() const { return Nx; }
+  int getNy() const { return Ny; }
+  int getNz() const { return Nz; }
 
 private:
   float cellSize;

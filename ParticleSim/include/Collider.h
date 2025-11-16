@@ -10,6 +10,8 @@ public:
   static void isOutOfBounds(Particle &particle);
   static void checkCollions(const Grid &grid, std::vector<Particle> &particles);
 
+  static void applyBoundaryCollision(Particle &p);
+
 private:
   static bool isXOutOfBounds(Particle &particle);
   static bool isYOutOfBounds(Particle &particle);
@@ -18,6 +20,7 @@ private:
   static void reverseXVelocity(Particle &particle);
   static void reverseYVelocity(Particle &particle);
   static void reverseZVelocity(Particle &particle);
+  static void resolveParticleCollision(Particle &A, Particle &B);
 };
 
-#endif // COLLIDER_H
+#endif // COLLIDER_Hclass Collider {

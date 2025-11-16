@@ -66,9 +66,9 @@ void Simulation::update(float dt) {
   }
 
   // Build grid
-  // grid.build(particles);
+  grid.build(particles);
 
-  // Collider::checkCollisions(grid, particles)
+  Collider::checkCollions(grid, particles);
 
   // Handle collisions
 }
