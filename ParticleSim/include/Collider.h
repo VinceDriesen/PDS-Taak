@@ -11,6 +11,8 @@ public:
   static void checkCollions(const Grid &grid, std::vector<Particle> &particles);
 
   static void applyBoundaryCollision(Particle &p);
+  static void applyPressure(const Grid &grid, std::vector<Particle> &particles,
+                            float dt);
 
 private:
   static bool isXOutOfBounds(Particle &particle);
