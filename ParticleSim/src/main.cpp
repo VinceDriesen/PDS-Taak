@@ -9,7 +9,7 @@ void ensureDirectory(const std::string &path) {
 }
 
 int main() {
-  const int N = 20;
+  const int N = 100;
   const int frames = 999;
   const float dt = 0.01f;
   const std::string outputFolder = "data";
