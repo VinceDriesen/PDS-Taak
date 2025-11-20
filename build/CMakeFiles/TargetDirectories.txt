@@ -1,3 +1,0 @@
-/home/themen/Documents/School/Ma1/PADS/PDS-Taak/build/CMakeFiles/particlesim.dir
-/home/themen/Documents/School/Ma1/PADS/PDS-Taak/build/CMakeFiles/edit_cache.dir
-/home/themen/Documents/School/Ma1/PADS/PDS-Taak/build/CMakeFiles/rebuild_cache.dir
