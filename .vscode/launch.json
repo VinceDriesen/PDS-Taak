@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug (CUDA-GDB)",
+            "type": "cppdbg",
+            "request": "launch",
+            // Points to the 'bin' folder defined in your CMakeLists.txt
+            "program": "${workspaceFolder}/ParticleSim/bin/particlesim",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    // Essential: Helps the executable find 'libcudart.so'
+                    "name": "LD_LIBRARY_PATH",
+                    "value": "/opt/cuda/lib64:${env:LD_LIBRARY_PATH}"
+                },
+                {
+                    "name": "PATH",
+                    "value": "/opt/cuda/bin:${env:PATH}"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            // CRITICAL: Points to the CUDA debugger, not standard gdb
+            "miDebuggerPath": "/opt/cuda/bin/cuda-gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                // Optional: Disables a specific CUDA check that can cause issues in VS Code
+                {
+                    "text": "set cuda software_preemption on",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}

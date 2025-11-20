@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 
+struct RGB {
+  float r, g, b;
+};
+
 class Simulation {
 public:
   Simulation(int N);
@@ -16,6 +20,8 @@ private:
   void initializeParticles(int N);
   std::vector<Particle> particles;
   void update(float dt);
+
+  const RGB getRGBFromSpeed(float vx, float vy, float vz);
 };
 
 #endif // SIMULATION_H

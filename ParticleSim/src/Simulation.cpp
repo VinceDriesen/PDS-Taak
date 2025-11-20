@@ -2,6 +2,7 @@
 #include "Collider.h"
 #include "Config.h"
 #include "ExporterVTK.h"
+#include <cmath>
 #include <iostream>
 
 Simulation::Simulation(int N)
@@ -54,7 +55,6 @@ void Simulation::initializeParticles(int N) {
 }
 
 void Simulation::update(float dt) {
-
   // Apply gravity + movement
   for (auto &p : particles) {
     p.vy += Config::gravity * dt;
@@ -63,6 +63,10 @@ void Simulation::update(float dt) {
     p.z += p.vz * dt;
 
     Collider::isOutOfBounds(p);
+    auto color = getRGBFromSpeed(p.vx, p.vy, p.vz);
+    p.r = color.r;
+    p.g = color.g;
+    p.b = color.b;
   }
 
   // Build grid
@@ -79,4 +83,34 @@ void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
     update(dt);
     ExporterVTK::saveVTKFile(particles, outputFolder, frame);
   }
+}
+
+const RGB Simulation::getRGBFromSpeed(float vx, float vy, float vz) {
+  float speed = std::sqrt(vx * vx + vy * vy + vz * vz);
+  
+  float t = speed / Config::maxSpeed; 
+  t = std::max(0.0f, std::min(t, 1.0f));
+
+  RGB c;
+
+  if (t < 0.33f) {
+      float local_t = t / 0.33f;
+      c.r = 0.0f;
+      c.g = local_t;       // 0.0 -> 1.0
+      c.b = 1.0f;
+  } 
+  else if (t < 0.66f) {
+      float local_t = (t - 0.33f) / 0.33f;
+      c.r = local_t;       // 0.0 -> 1.0
+      c.g = 1.0f;
+      c.b = 1.0f - local_t; // 1.0 -> 0.0
+  } 
+  else {
+      float local_t = (t - 0.66f) / 0.34f;
+      c.r = 1.0f;
+      c.g = 1.0f - local_t; // 1.0 -> 0.0
+      c.b = 0.0f;
+  }
+
+  return c;
 }

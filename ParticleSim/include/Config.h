@@ -18,6 +18,8 @@ struct Config {
   constexpr static float particleMass = 0.05f;
   constexpr static float stiffness = 50.0f;
   constexpr static float restDensity = 1000.0f;
+
+  constexpr static float maxSpeed = 50.0f;
 };
 
 #endif // CONFIG_H
