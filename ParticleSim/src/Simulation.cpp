@@ -2,6 +2,7 @@
 #include "Collider.h"
 #include "Config.h"
 #include "ExporterVTK.h"
+#include <cmath>
 #include <cstdlib> // Voor rand()
 #include <cmath>
 #include <iostream>
@@ -34,7 +35,8 @@ void Simulation::initializeParticles(int N) {
     float cz = (Config::zmax - Config::zmin) / 2.0f;
 
     // Straal van de bol
-    float sphereRadius = 2.5f;
+    float sphereRadius =
+        spacing * std::pow((3.0f * N) / (4.0f * M_PI), 1.0f / 3.0f);
 
     // Bounding box rondom de bol berekenen
     int steps = (int)(sphereRadius / spacing);
