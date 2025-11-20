@@ -21,6 +21,8 @@ struct Config {
   constexpr static float repulsionStiffness = 8000.0f;
   constexpr static float maxPressureForce = 800.0f;
   constexpr static float restDensity = 1000.0f;
+
+  constexpr static float maxSpeed = 50.0f;
 };
 
 #endif // CONFIG_H

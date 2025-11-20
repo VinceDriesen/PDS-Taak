@@ -1,0 +1,7 @@
+{
+    "cmake.sourceDirectory": "/home/themen/Documents/School/Ma1/PADS/PDS-Taak/ParticleSim",
+    "cmake.configureSettings": {
+        "CUDAToolkit_ROOT": "/opt/cuda",
+        "CMAKE_CUDA_COMPILER": "/opt/cuda/bin/nvcc" 
+    }
+}

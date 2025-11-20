@@ -18,10 +18,12 @@ void ExporterVTK::saveVTKFile(const std::vector<Particle> &particles,
     file << p.x << " " << p.y << " " << p.z << "\n";
   }
 
-  // Voeg kleuren toe
   file << "POINT_DATA " << particles.size() << "\n";
-  file << "COLOR_SCALARS particleColor 3\n";
+  file << "SCALARS particleColor float 3\n";
+  file << "LOOKUP_TABLE default\n";
+  
   for (const auto &p : particles) {
+    // Schrijf ze weg als floats (0.0 - 1.0)
     file << p.r << " " << p.g << " " << p.b << "\n";
   }
 
