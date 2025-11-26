@@ -2,14 +2,18 @@
 #include "Collider.h"
 #include "Config.h"
 #include "ExporterVTK.h"
+#include "SimulationKernel.cuh"
 #include <cmath>
 #include <cstdlib> // Voor rand()
 #include <cmath>
 #include <iostream>
+#include <memory>
 
 Simulation::Simulation(int N)
     : grid(Config::diameter, Config::xmin, Config::xmax, Config::ymin,
-           Config::ymax, Config::zmin, Config::zmax) {
+           Config::ymax, Config::zmin, Config::zmax),
+      sm(nullptr)
+{
   // Initialize particles
   initializeParticles(N);
 
@@ -102,30 +106,37 @@ void Simulation::initializeParticles(int N) {
   }
 }
 
-void Simulation::update(float dt) {
+void Simulation::update(float dt, bool useGpu = false) {
   // 1. Grid bouwen (EERST doen, zodat buren kloppen voor drukberekening)
   grid.build(particles);
 
   // 2. Krachten berekenen (Druk + Viscositeit + Repulsion)
   // Dit past de vx, vy, vz van de particles aan.
   Collider::applyPressure(grid, particles, dt);
-
+  
   // 3. Bewegen & Zwaartekracht & Grenzen
-  for (auto &p : particles) {
-    // Zwaartekracht toepassen
-    p.vy += Config::gravity * dt;
-
-    // Positie updaten op basis van nieuwe snelheid
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.z += p.vz * dt;
-
-    // Controleren of ze de bak uit vliegen
-    Collider::isOutOfBounds(p);
-    auto color = getRGBFromSpeed(p.vx, p.vy, p.vz);
-    p.r = color.r;
-    p.g = color.g;
-    p.b = color.b;
+  if (useGpu && sm)
+  {
+    sm->simulationUpdate(dt);
+  }
+  else
+  {
+    for (auto &p : particles) {
+      // Zwaartekracht toepassen
+      p.vy += Config::gravity * dt;
+  
+      // Positie updaten op basis van nieuwe snelheid
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.z += p.vz * dt;
+  
+      // Controleren of ze de bak uit vliegen
+      Collider::isOutOfBounds(p);
+      auto color = getRGBFromSpeed(p.vx, p.vy, p.vz);
+      p.r = color.r;
+      p.g = color.g;
+      p.b = color.b;
+    }
   }
 
   // Optioneel: Backup collision check voor als ze door elkaar vliegen
@@ -136,6 +147,15 @@ void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
   std::cout << "Running CPU simulation for " << frames << " frames.\n";
   for (int frame = 0; frame < frames; ++frame) {
     update(dt);
+    ExporterVTK::saveVTKFile(particles, outputFolder, frame);
+  }
+}
+
+void Simulation::runGPU(int frames, float dt, const std::string &outputFolder) {
+  sm = std::make_unique<SimulationKernel>(particles.data(), particles.size());
+  std::cout << "Running CPU + GPU simulation for " << frames << " frames.\n";
+  for (int frame = 0; frame < frames; ++frame) {
+    update(dt, true);
     ExporterVTK::saveVTKFile(particles, outputFolder, frame);
   }
 }

@@ -1,5 +1,6 @@
 #include "Simulation.h"
 #include <filesystem>
+#include <iostream>
 #include <string>
 
 void ensureDirectory(const std::string &path) {
@@ -18,7 +19,15 @@ int main() {
 
   Simulation sim(N);
 
-  sim.runCPU(frames, dt, outputFolder);
+  std::cout << "Use GPU? y or n: ";
+
+  char userGPUChar;
+  std::cin >> userGPUChar;
+  if (userGPUChar == 'y' || userGPUChar == 'Y') {
+    sim.runGPU(frames, dt, outputFolder);
+  } else {
+    sim.runCPU(frames, dt, outputFolder);
+  }
 
   return 0;
 }

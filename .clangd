@@ -1,0 +1,20 @@
+If:
+  PathMatch: .*\.cu(h)?$
+
+CompileFlags:
+  Compiler: clang++
+  
+  Add:
+    - "--cuda-path=/opt/cuda"
+    - "-x"
+    - "cuda"
+    - "-Wno-unknown-cuda-version"
+
+  Remove: 
+    - "-forward-unknown-to-host-compiler"
+    - "--generate-code=*"
+    - "-gencode=*"
+    - "--compiler-options"
+    - "-rdc=*"
+    - "-Xcompiler*"
+    - "--expt-extended-lambda"

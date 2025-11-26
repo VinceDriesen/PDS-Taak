@@ -3,5 +3,6 @@
     "cmake.configureSettings": {
         "CUDAToolkit_ROOT": "/opt/cuda",
         "CMAKE_CUDA_COMPILER": "/opt/cuda/bin/nvcc" 
-    }
+    },
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
 }
