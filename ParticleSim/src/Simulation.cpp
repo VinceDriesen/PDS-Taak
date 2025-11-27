@@ -5,15 +5,13 @@
 #include "SimulationKernel.cuh"
 #include <cmath>
 #include <cstdlib> // Voor rand()
-#include <cmath>
 #include <iostream>
 #include <memory>
 
 Simulation::Simulation(int N)
     : grid(Config::diameter, Config::xmin, Config::xmax, Config::ymin,
            Config::ymax, Config::zmin, Config::zmax),
-      sm(nullptr)
-{
+      sm(nullptr) {
   // Initialize particles
   initializeParticles(N);
 
@@ -113,23 +111,20 @@ void Simulation::update(float dt, bool useGpu = false) {
   // 2. Krachten berekenen (Druk + Viscositeit + Repulsion)
   // Dit past de vx, vy, vz van de particles aan.
   Collider::applyPressure(grid, particles, dt);
-  
+
   // 3. Bewegen & Zwaartekracht & Grenzen
-  if (useGpu && sm)
-  {
+  if (useGpu && sm) {
     sm->simulationUpdate(dt);
-  }
-  else
-  {
+  } else {
     for (auto &p : particles) {
       // Zwaartekracht toepassen
       p.vy += Config::gravity * dt;
-  
+
       // Positie updaten op basis van nieuwe snelheid
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.z += p.vz * dt;
-  
+
       // Controleren of ze de bak uit vliegen
       Collider::isOutOfBounds(p);
       auto color = getRGBFromSpeed(p.vx, p.vy, p.vz);
@@ -140,7 +135,7 @@ void Simulation::update(float dt, bool useGpu = false) {
   }
 
   // Optioneel: Backup collision check voor als ze door elkaar vliegen
-  // Collider::checkCollions(grid, particles);
+  Collider::checkCollions(grid, particles);
 }
 
 void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
@@ -162,29 +157,27 @@ void Simulation::runGPU(int frames, float dt, const std::string &outputFolder) {
 
 const RGB Simulation::getRGBFromSpeed(float vx, float vy, float vz) {
   float speed = std::sqrt(vx * vx + vy * vy + vz * vz);
-  
-  float t = speed / Config::maxSpeed; 
+
+  float t = speed / Config::maxSpeed;
   t = std::max(0.0f, std::min(t, 1.0f));
 
   RGB c;
 
   if (t < 0.33f) {
-      float local_t = t / 0.33f;
-      c.r = 0.0f;
-      c.g = local_t;       // 0.0 -> 1.0
-      c.b = 1.0f;
-  } 
-  else if (t < 0.66f) {
-      float local_t = (t - 0.33f) / 0.33f;
-      c.r = local_t;       // 0.0 -> 1.0
-      c.g = 1.0f;
-      c.b = 1.0f - local_t; // 1.0 -> 0.0
-  } 
-  else {
-      float local_t = (t - 0.66f) / 0.34f;
-      c.r = 1.0f;
-      c.g = 1.0f - local_t; // 1.0 -> 0.0
-      c.b = 0.0f;
+    float local_t = t / 0.33f;
+    c.r = 0.0f;
+    c.g = local_t; // 0.0 -> 1.0
+    c.b = 1.0f;
+  } else if (t < 0.66f) {
+    float local_t = (t - 0.33f) / 0.33f;
+    c.r = local_t; // 0.0 -> 1.0
+    c.g = 1.0f;
+    c.b = 1.0f - local_t; // 1.0 -> 0.0
+  } else {
+    float local_t = (t - 0.66f) / 0.34f;
+    c.r = 1.0f;
+    c.g = 1.0f - local_t; // 1.0 -> 0.0
+    c.b = 0.0f;
   }
 
   return c;

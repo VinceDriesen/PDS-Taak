@@ -12,17 +12,27 @@ struct Config {
   constexpr static float zmax = 10;
 
   constexpr static float gravity = -9.81;
-  constexpr static float diameter = 0.1;
+  constexpr static float diameter = 0.3;
 
   constexpr static float smoothingRadius = diameter * 3.0f;
-  constexpr static float particleMass = 10.0f;
-  constexpr static float stiffness = 100.0f;
-  constexpr static float viscosity = 5.0f;
+
+  // AANPASSING 1: Massa iets realistischer t.o.v. volume en dichtheid
+  constexpr static float particleMass = 14.0f;
+
+  // AANPASSING 2: Stijfheid flink omhoog voor minder samendrukbaarheid
+  // Dit zorgt voor meer "bounce" en minder energieverlies in compressie
+  constexpr static float stiffness = 1000.0f; // Was 100.0f
+
+  // AANPASSING 3: Viscositeit drastisch omlaag
+  // Dit is de belangrijkste factor voor het "tot rust komen"
+  constexpr static float viscosity = 0.3f; // Was 2.0f
+
   constexpr static float repulsionStiffness = 8000.0f;
   constexpr static float maxPressureForce = 800.0f;
   constexpr static float restDensity = 1000.0f;
 
-  constexpr static float maxSpeed = 50.0f;
+  // AANPASSING 4: Max snelheid iets omhoog om pieken toe te laten
+  constexpr static float maxSpeed = 60.0f;
 };
 
 #endif // CONFIG_H
