@@ -147,3 +147,9 @@ void SimulationKernel::simulationUpdate(float dt)
     cudaDeviceSynchronize();
     cudaMemcpy(_particles, _d_particles, sizeBytes, cudaMemcpyDeviceToHost);
 }
+
+// Bekijken van scaling CUDA gebruik
+// Scaling multi-GPU's
+// single GPU - Streaming Multi-processors (1, 2, etc.)
+// single GPU - Multi kernels gebruiken om de helft "Busy" te houden (cudaStreams)
+// Verschillende GPU's (kloksnelheden?)

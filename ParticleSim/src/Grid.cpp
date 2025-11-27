@@ -1,5 +1,4 @@
 #include "Grid.h"
-#include "Config.h"
 #include <cmath>
 
 Grid::Grid(float cellSize, float xmin, float xmax, float ymin, float ymax,
