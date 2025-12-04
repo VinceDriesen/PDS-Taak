@@ -3,7 +3,7 @@
 #SBATCH --account=lp_h_pds_iiw
 #SBATCH --nodes=1
 #SBATCH --gpus-per-node=1
-#SBATCH --time=00:10:00
+#SBATCH --time=00:20:00
 #SBATCH --output="%x_%j.out"
 #SBATCH --error="%x_%j.err"
 

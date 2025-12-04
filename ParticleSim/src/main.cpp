@@ -10,7 +10,7 @@ void ensureDirectory(const std::string &path) {
 }
 
 int main(int argc, char* argv[]) {
-  const int N = 100000;
+  const int N = 1000000;
   const int frames = 999;
   const float dt = 0.01f;
   const std::string outputFolder = "data";
