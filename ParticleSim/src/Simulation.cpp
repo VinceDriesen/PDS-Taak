@@ -3,8 +3,10 @@
 #include "Config.h"
 #include "ExporterVTK.h"
 #include "SimulationKernel.cuh"
+#include "CudaUtils.cuh"
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -176,30 +178,46 @@ void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
   std::cout << "CPU Execution completed in: " << diff.count() << " seconds.\n";
 }
 
-void Simulation::runGPU(int frames, float dt, const std::string &outputFolder) {
+void Simulation::runGPU(int frames, float dt, const std::string &outputFolder, bool doIO) {
   sm = std::make_unique<SimulationKernel>(particles.data(), particles.size());
 
   sm->copyHostToDevice();
 
-  grid_kernel = std::make_unique<GridKernel>(
-      particles.size()
-  );
+  grid_kernel = std::make_unique<GridKernel>(particles.size());
 
-  collider_kernel = std::make_unique<ColliderKernel>(
-      particles.size()
-  );
+  collider_kernel = std::make_unique<ColliderKernel>(particles.size());
   std::cout << "Running CPU + GPU simulation for " << frames << " frames.\n";
   
+  // 1. Initialize GPU Timer
+  CudaUtils::Timer timer;
+  
   auto start = std::chrono::high_resolution_clock::now();
+  
+  // 2. Start Recording
+  timer.start();
 
   for (int frame = 0; frame < frames; ++frame) {
     updateGpu(dt);
-    ExporterVTK::saveVTKFile(particles, outputFolder, frame);
+    if (doIO) {
+      ExporterVTK::saveVTKFile(particles, outputFolder, frame);
+    }
   }
 
+  // 3. Stop Recording
+  timer.stop();
+  
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> diff = end - start;
-  std::cout << "GPU Execution completed in: " << diff.count() << " seconds.\n";
+
+  // 4. Get precise metrics
+  float gpuTotalMs = timer.elapsed();
+  float gpuAvgMs = gpuTotalMs / frames;
+
+  std::cout << "------------------------------------------------\n";
+  std::cout << "Total Wall Time: " << diff.count() << " s\n";
+  std::cout << "GPU Duration:    " << gpuTotalMs << " ms\n"; 
+  std::cout << "Average Frame:   " << gpuAvgMs << " ms/frame\n";
+  std::cout << "------------------------------------------------\n";
 }
 
 const RGB Simulation::getRGBFromSpeed(float vx, float vy, float vz) {
@@ -228,4 +246,66 @@ const RGB Simulation::getRGBFromSpeed(float vx, float vy, float vz) {
   }
 
   return c;
+}
+
+void Simulation::testLoops(int frames, float dt, const std::string &outputFolder, bool skipCPU, bool doIO)
+{
+    size_t N = particles.size();
+    
+    namespace fs = std::filesystem;
+    fs::path rootPath(outputFolder);
+    if (!fs::exists(rootPath)) fs::create_directories(rootPath);
+
+    // 1. Get Device Info via CudaUtils
+    int totalSMs = CudaUtils::getSMCount();
+    std::string deviceName = CudaUtils::getDeviceName();
+    
+    std::cout << "================================================\n";
+    std::cout << "      BENCHMARKING: " << deviceName << "\n";
+    std::cout << "      TOTAL SMs: " << totalSMs << "\n";
+    std::cout << "================================================\n";
+
+    // 2. Run 5 Equal Steps (20%, 40%, 60%, 80%, 100%)
+    int steps = 5;
+
+    for (int i = 1; i <= steps; i++) {
+        float percent = (float)i / steps;
+        
+        // Calculate limit: Ensure at least 1 SM is used
+        int smLimit = std::max(1, (int)(totalSMs * percent));
+
+        std::string modeName = std::to_string((int)(percent * 100)) + "% Power (" + std::to_string(smLimit) + " SMs)";
+        std::string dirName = "gpu_" + std::to_string((int)(percent * 100)) + "_percent";
+
+        std::cout << "\n--- [TEST " << i << "/" << steps << "] " << modeName << " ---\n";
+        
+        // Set the limit in CudaUtils
+        CudaUtils::setGridLimit(smLimit);
+
+        initializeParticles(N);
+
+        fs::path gpuDir = rootPath / dirName;
+        fs::create_directories(gpuDir);
+
+        runGPU(frames, dt, gpuDir.string(), doIO);
+    }
+
+    // 3. Run Auto/Unlimited (Max Occupancy)
+    std::cout << "\n--- [TEST AUTO] Uncapped / Max Occupancy ---\n";
+    CudaUtils::setGridLimit(0); 
+    initializeParticles(N);
+    runGPU(frames, dt, (rootPath / "gpu_max_auto").string());
+
+    if (!skipCPU)
+    {
+      std::cout << "\n--- [TEST CPU] Baseline ---\n";
+      initializeParticles(N);
+      fs::path cpuDir = rootPath / "cpu";
+      fs::create_directories(cpuDir);
+      runCPU(frames, dt, cpuDir.string());
+    }
+
+    std::cout << "\n================================================\n";
+    std::cout << "             BENCHMARK COMPLETE                 \n";
+    std::cout << "================================================\n";
 }

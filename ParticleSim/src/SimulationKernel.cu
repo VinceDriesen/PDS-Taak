@@ -85,7 +85,7 @@ SimulationKernel::SimulationKernel(Particle* particles, size_t numParticles)
         Config::maxSpeed,
     };
 
-    auto launchConfig = CudaUtils::getOptimalConfig(updateKernel, numParticles);
+    auto launchConfig = CudaUtils::getOptimalConfig(updateKernel, numParticles, "UpdateSimulationKernel");
     this->_blockSize = launchConfig.blockSize;
     this->_gridSize = launchConfig.gridSize;
 };

@@ -3,6 +3,8 @@
 
 #include <cuda_runtime.h>
 #include <algorithm>
+#include <cstdio>
+#include <string>
 
 struct LaunchConfig 
 {
@@ -13,46 +15,90 @@ struct LaunchConfig
 class CudaUtils 
 {
 public:
-
-    static void setSMMultiplier(int multiplier)
+    // --- New: RAII GPU Timer ---
+    struct Timer 
     {
-        if (multiplier > 0)
-        {
-            int deviceId;
-            cudaGetDevice(&deviceId);
-            cudaDeviceProp prop;
-            cudaGetDeviceProperties(&prop, deviceId);
-            
-            _getStoredSMLimit() = prop.multiProcessorCount * multiplier;
+        cudaEvent_t _start, _stop;
+
+        Timer() {
+            cudaEventCreate(&_start);
+            cudaEventCreate(&_stop);
         }
-        else
-        {
-            _getStoredSMLimit() = 0;
+
+        ~Timer() {
+            cudaEventDestroy(_start);
+            cudaEventDestroy(_stop);
         }
+
+        void start(cudaStream_t stream = 0) {
+            cudaEventRecord(_start, stream);
+        }
+
+        void stop(cudaStream_t stream = 0) {
+            cudaEventRecord(_stop, stream);
+        }
+
+        // Returns time in milliseconds
+        float elapsed() {
+            cudaEventSynchronize(_stop);
+            float milliseconds = 0;
+            cudaEventElapsedTime(&milliseconds, _start, _stop);
+            return milliseconds;
+        }
+    };
+
+    // --- Device Helpers ---
+
+    static int getSMCount()
+    {
+        int deviceId;
+        cudaGetDevice(&deviceId);
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, deviceId);
+        return prop.multiProcessorCount;
+    }
+
+    static std::string getDeviceName()
+    {
+        int deviceId;
+        cudaGetDevice(&deviceId);
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, deviceId);
+        return std::string(prop.name);
+    }
+
+    // --- Configuration Logic ---
+
+    static void setGridLimit(int limit)
+    {
+        _getStoredGridLimit() = limit;
     }
 
     template <typename KernelFunc>
-    static LaunchConfig getOptimalConfig(KernelFunc kernel, int numElements) 
+    static LaunchConfig getOptimalConfig(KernelFunc kernel, int numElements, const char* kernelName = "Unknown Kernel") 
     {
         int minGridSize;
         int blockSize;
 
         cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, kernel, 0, numElements);
+        
         int optimalGrids = (numElements + blockSize - 1) / blockSize;
         int finalGridSize = optimalGrids;
+        int limit = _getStoredGridLimit();
 
-        int smLimit = _getStoredSMLimit();
-
-        if (smLimit > 0)
+        if (limit > 0)
         {
-            finalGridSize = std::min(optimalGrids, smLimit);
+            finalGridSize = std::min(optimalGrids, limit);
         }
+
+        // Reduced verbosity for benchmark loops
+        printf("Kernel: %s | Grid: %d | Block: %d\n", kernelName, finalGridSize, blockSize);
 
         return {finalGridSize, blockSize};
     }
 
 private:
-    static int& _getStoredSMLimit() {
+    static int& _getStoredGridLimit() {
         static int limit = 0;
         return limit;
     }

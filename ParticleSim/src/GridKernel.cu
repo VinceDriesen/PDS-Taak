@@ -59,7 +59,7 @@ GridKernel::GridKernel(int numParticles)
     cudaMalloc(&d_gridHead, totalCells * sizeof(int));
     cudaMalloc(&d_particleNext, numParticles * sizeof(int));
 
-    auto launchConfig = CudaUtils::getOptimalConfig(buildGridKernel, numParticles);
+    auto launchConfig = CudaUtils::getOptimalConfig(buildGridKernel, numParticles, "BuildGridKernel");
     this->blockSize = launchConfig.blockSize;
     this->gridSize = launchConfig.gridSize;
 }

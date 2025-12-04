@@ -19,7 +19,9 @@ public:
   Simulation(int N);
   void runCPU(int frames, float dt, const std::string &outputFolder);
 
-  void runGPU(int frames, float dt, const std::string &outputFolder);
+  void runGPU(int frames, float dt, const std::string &outputFolder, bool doIO);
+
+  void testLoops(int frames, float dt, const std::string &outputFolder, bool skipCPU, bool doIO);
 
 private:
   Grid grid;
