@@ -4,11 +4,11 @@
 #include "ExporterVTK.h"
 #include "SimulationKernel.cuh"
 #include <cmath>
-#include <cstdlib> // Voor rand()
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-#include <chrono> // Added for timing
+#include <chrono>
 
 Simulation::Simulation(int N)
     : grid(Config::diameter, Config::xmin, Config::xmax, Config::ymin,
