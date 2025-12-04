@@ -294,7 +294,7 @@ void Simulation::testLoops(int frames, float dt, const std::string &outputFolder
     std::cout << "\n--- [TEST AUTO] Uncapped / Max Occupancy ---\n";
     CudaUtils::setGridLimit(0); 
     initializeParticles(N);
-    runGPU(frames, dt, (rootPath / "gpu_max_auto").string());
+    runGPU(frames, dt, (rootPath / "gpu_max_auto").string(), doIO);
 
     if (!skipCPU)
     {
