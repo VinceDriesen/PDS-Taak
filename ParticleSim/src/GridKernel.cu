@@ -1,6 +1,7 @@
 #include "GridKernel.cuh"
 #include "Config.h"
 #include "Particle.h"
+#include "CudaUtils.cuh"
 #include <cuda_runtime.h>
 
 __device__ int getCellIndex(float x, float y, float z, int Nx, int Ny, int Nz) 
@@ -23,16 +24,19 @@ __global__ void buildGridKernel(Particle* particles, int numParticles,
                                 int* gridHead, int* particleNext,
                                 int Nx, int Ny, int Nz) 
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i >= numParticles) return;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
 
-    // Calculate which cell this particle belongs to
-    // We pass Nx, Ny, Nz because grid dimensions depend on the bounds size
-    int cellIndex = getCellIndex(particles[i].x, particles[i].y, particles[i].z, Nx, Ny, Nz);
-
-    // Insert into linked list (Atomic Exchange)
-    int nextParticleID = atomicExch(&gridHead[cellIndex], i);
-    particleNext[i] = nextParticleID;
+    for (int i = index; i < numParticles; i += stride)
+    {
+        // Calculate which cell this particle belongs to
+        // We pass Nx, Ny, Nz because grid dimensions depend on the bounds size
+        int cellIndex = getCellIndex(particles[i].x, particles[i].y, particles[i].z, Nx, Ny, Nz);
+    
+        // Insert into linked list (Atomic Exchange)
+        int nextParticleID = atomicExch(&gridHead[cellIndex], i);
+        particleNext[i] = nextParticleID;
+    }
 }
 
 GridKernel::GridKernel(int numParticles)
@@ -55,9 +59,9 @@ GridKernel::GridKernel(int numParticles)
     cudaMalloc(&d_gridHead, totalCells * sizeof(int));
     cudaMalloc(&d_particleNext, numParticles * sizeof(int));
 
-    int minGridSize;
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, buildGridKernel, 0, numParticles);
-    gridSize = (numParticles + blockSize - 1) / blockSize;
+    auto launchConfig = CudaUtils::getOptimalConfig(buildGridKernel, numParticles);
+    this->blockSize = launchConfig.blockSize;
+    this->gridSize = launchConfig.gridSize;
 }
 
 GridKernel::~GridKernel() {

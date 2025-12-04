@@ -1,9 +1,8 @@
 #include "SimulationKernel.cuh"
-#include <cstddef>
-#include <cstdio>
-#include <cuda_runtime.h>
 #include "Particle.h"
 #include "Config.h"
+#include "CudaUtils.cuh"
+#include <cuda_runtime.h>
 
 __device__ void updateColour(Particle *p, float maxSpeed)
 {
@@ -39,31 +38,35 @@ __device__ void updateColour(Particle *p, float maxSpeed)
 
 __global__ void updateKernel(Particle* particles, int numParticles, float dt, BoundsCuda bounds, ConfigCuda config)
 {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx >= numParticles) return;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
 
-    Particle p = particles[idx]; // Load into registers
+    for (int i = index; i < numParticles; i += stride)
+    {
+        Particle p = particles[i]; // Load into registers
+    
+        // Apply Gravity
+        p.vy += config.gravity * dt;
+    
+        // Move Particle
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.z += p.vz * dt;
+    
+        if (p.x < bounds.xmin) { p.x = bounds.xmin; p.vx *= -0.5f; }
+        else if (p.x > bounds.xmax) { p.x = bounds.xmax; p.vx *= -0.5f; }
+    
+        if (p.y < bounds.ymin) { p.y = bounds.ymin; p.vy *= -0.5f; }
+        else if (p.y > bounds.ymax) { p.y = bounds.ymax; p.vy *= -0.5f; }
+    
+        if (p.z < bounds.zmin) { p.z = bounds.zmin; p.vz *= -0.5f; }
+        else if (p.z > bounds.zmax) { p.z = bounds.zmax; p.vz *= -0.5f; }
+    
+        updateColour(&p, config.maxSpeed);
+    
+        particles[i] = p; // Write back once
+    }
 
-    // Apply Gravity
-    p.vy += config.gravity * dt;
-
-    // Move Particle
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.z += p.vz * dt;
-
-    if (p.x < bounds.xmin) { p.x = bounds.xmin; p.vx *= -0.5f; }
-    else if (p.x > bounds.xmax) { p.x = bounds.xmax; p.vx *= -0.5f; }
-
-    if (p.y < bounds.ymin) { p.y = bounds.ymin; p.vy *= -0.5f; }
-    else if (p.y > bounds.ymax) { p.y = bounds.ymax; p.vy *= -0.5f; }
-
-    if (p.z < bounds.zmin) { p.z = bounds.zmin; p.vz *= -0.5f; }
-    else if (p.z > bounds.zmax) { p.z = bounds.zmax; p.vz *= -0.5f; }
-
-    updateColour(&p, config.maxSpeed);
-
-    particles[idx] = p; // Write back once
 }
 
 SimulationKernel::SimulationKernel(Particle* particles, size_t numParticles)
@@ -82,9 +85,9 @@ SimulationKernel::SimulationKernel(Particle* particles, size_t numParticles)
         Config::maxSpeed,
     };
 
-    int minGridSize;
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &_blockSize, updateKernel, 0, _numParticles);
-    _gridSize = (_numParticles + _blockSize - 1) / _blockSize;
+    auto launchConfig = CudaUtils::getOptimalConfig(updateKernel, numParticles);
+    this->_blockSize = launchConfig.blockSize;
+    this->_gridSize = launchConfig.gridSize;
 };
 
 SimulationKernel::~SimulationKernel()
