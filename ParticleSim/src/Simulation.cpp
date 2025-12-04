@@ -7,11 +7,13 @@
 #include <cstdlib> // Voor rand()
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <chrono> // Added for timing
 
 Simulation::Simulation(int N)
     : grid(Config::diameter, Config::xmin, Config::xmax, Config::ymin,
            Config::ymax, Config::zmin, Config::zmax),
-      sm(nullptr) {
+      sm(nullptr), grid_kernel(nullptr), collider_kernel(nullptr) {
   // Initialize particles
   initializeParticles(N);
 
@@ -104,7 +106,7 @@ void Simulation::initializeParticles(int N) {
   }
 }
 
-void Simulation::update(float dt, bool useGpu = false) {
+void Simulation::update(float dt) {
   // 1. Grid bouwen (EERST doen, zodat buren kloppen voor drukberekening)
   grid.build(particles);
 
@@ -113,46 +115,91 @@ void Simulation::update(float dt, bool useGpu = false) {
   Collider::applyPressure(grid, particles, dt);
 
   // 3. Bewegen & Zwaartekracht & Grenzen
-  if (useGpu && sm) {
-    sm->simulationUpdate(dt);
-  } else {
-    for (auto &p : particles) {
-      // Zwaartekracht toepassen
-      p.vy += Config::gravity * dt;
+  for (auto &p : particles) {
+    // Zwaartekracht toepassen
+    p.vy += Config::gravity * dt;
 
-      // Positie updaten op basis van nieuwe snelheid
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.z += p.vz * dt;
+    // Positie updaten op basis van nieuwe snelheid
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.z += p.vz * dt;
 
-      // Controleren of ze de bak uit vliegen
-      Collider::isOutOfBounds(p);
-      auto color = getRGBFromSpeed(p.vx, p.vy, p.vz);
-      p.r = color.r;
-      p.g = color.g;
-      p.b = color.b;
-    }
+    // Controleren of ze de bak uit vliegen
+    Collider::isOutOfBounds(p);
+    auto color = getRGBFromSpeed(p.vx, p.vy, p.vz);
+    p.r = color.r;
+    p.g = color.g;
+    p.b = color.b;
   }
 
   // Optioneel: Backup collision check voor als ze door elkaar vliegen
   Collider::checkCollions(grid, particles);
 }
 
+void Simulation::updateGpu(float dt)
+{
+    if(!sm || !grid_kernel || !collider_kernel) 
+    {
+        throw std::runtime_error("SimulationKernel, GridKernel, or ColliderKernel not defined");
+    }
+
+    Particle* d_particles = sm->getDevicePtr();
+
+    grid_kernel->build(d_particles);
+
+    collider_kernel->update(
+        d_particles, 
+        grid_kernel->getGridHead(),
+        grid_kernel->getParticleNext(),
+        grid_kernel->getCellSize(),     
+        grid_kernel->getNx(), 
+        grid_kernel->getNy(), 
+        grid_kernel->getNz(), 
+        dt
+    );
+
+    sm->copyDeviceToHost();
+}
+
 void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
   std::cout << "Running CPU simulation for " << frames << " frames.\n";
+  
+  auto start = std::chrono::high_resolution_clock::now();
+
   for (int frame = 0; frame < frames; ++frame) {
     update(dt);
     ExporterVTK::saveVTKFile(particles, outputFolder, frame);
   }
+
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> diff = end - start;
+  std::cout << "CPU Execution completed in: " << diff.count() << " seconds.\n";
 }
 
 void Simulation::runGPU(int frames, float dt, const std::string &outputFolder) {
   sm = std::make_unique<SimulationKernel>(particles.data(), particles.size());
+
+  sm->copyHostToDevice();
+
+  grid_kernel = std::make_unique<GridKernel>(
+      particles.size()
+  );
+
+  collider_kernel = std::make_unique<ColliderKernel>(
+      particles.size()
+  );
   std::cout << "Running CPU + GPU simulation for " << frames << " frames.\n";
+  
+  auto start = std::chrono::high_resolution_clock::now();
+
   for (int frame = 0; frame < frames; ++frame) {
-    update(dt, true);
+    updateGpu(dt);
     ExporterVTK::saveVTKFile(particles, outputFolder, frame);
   }
+
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> diff = end - start;
+  std::cout << "GPU Execution completed in: " << diff.count() << " seconds.\n";
 }
 
 const RGB Simulation::getRGBFromSpeed(float vx, float vy, float vz) {

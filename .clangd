@@ -18,3 +18,5 @@ CompileFlags:
     - "-rdc=*"
     - "-Xcompiler*"
     - "--expt-extended-lambda"
+    - "--options-file"
+    - "--use_fast_math"

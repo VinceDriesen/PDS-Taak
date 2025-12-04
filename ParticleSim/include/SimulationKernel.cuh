@@ -19,11 +19,14 @@ class SimulationKernel
 {
 public:
     SimulationKernel(Particle* particles, size_t numParticles);
-
     ~SimulationKernel();
-
     SimulationKernel(const SimulationKernel&) = delete;
     SimulationKernel& operator=(const SimulationKernel&) = delete;
+
+    Particle* getDevicePtr() const { return _d_particles; }
+
+    void copyDeviceToHost();
+    void copyHostToDevice();
 
     void simulationUpdate(float dt);
 

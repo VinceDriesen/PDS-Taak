@@ -28,3 +28,7 @@ add_executable(particlesim ${SRC})
 target_link_libraries(particlesim PRIVATE CUDA::cudart)
 
 set_target_properties(particlesim PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+target_compile_options(particlesim PRIVATE 
+    $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math>
+)
