@@ -59,4 +59,4 @@ cmake --build "$BUILD_DIR" --parallel "$SLURM_CPUS_PER_TASK"
 # 4. Run
 echo "Starting simulation..."
 # The executable is inside build/bin/particlesim based on your description
-./"$REPO_ROOT"/"$SUB_DIR"/"$EXE_PATH" test nocpi noio
+./"$EXE_PATH" test nocpi noio

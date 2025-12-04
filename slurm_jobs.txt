@@ -1,4 +1,4 @@
-sbatch --partition=gpu_h100 --job-name=sim_h100 test_wice.slurm
-sbatch --partition=gpu_a100 --job-name=sim_a100 test_wice.slurm
-sbatch --partition=gpu_p100 --job-name=sim_p100 test_genius.slurm
-sbatch --partition=gpu_v100 --job-name=sim_v100 test_genius.slurm
+sbatch --ntasks-per-node=36 --partition=gpu_h100 --job-name=sim_h100 test_wice.slurm
+sbatch --ntasks-per-node=32 --partition=gpu_a100 --job-name=sim_a100 test_wice.slurm
+sbatch --ntasks-per-node=18 --partition=gpu_p100 --job-name=sim_p100 test_genius.slurm
+sbatch --ntasks-per-node=18 --partition=gpu_v100 --job-name=sim_v100 test_genius.slurm
