@@ -84,7 +84,7 @@ void Simulation::initializeParticles(int N) {
       }
     }
     std::cout << "Initialized sphere with " << particles.size()
-              << " particles.\n";
+              << " particles." << std::endl;
     break;
   }
   case 1: { // Twee druppels (Test case)
@@ -164,7 +164,7 @@ void Simulation::updateGpu(float dt)
 }
 
 void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
-  std::cout << "Running CPU simulation for " << frames << " frames.\n";
+  std::cout << "Running CPU simulation for " << frames << " frames." << std::endl;
   
   auto start = std::chrono::high_resolution_clock::now();
 
@@ -175,7 +175,7 @@ void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
 
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> diff = end - start;
-  std::cout << "CPU Execution completed in: " << diff.count() << " seconds.\n";
+  std::cout << "CPU Execution completed in: " << diff.count() << " seconds." << std::endl;
 }
 
 void Simulation::runGPU(int frames, float dt, const std::string &outputFolder, bool doIO) {
@@ -186,7 +186,7 @@ void Simulation::runGPU(int frames, float dt, const std::string &outputFolder, b
   grid_kernel = std::make_unique<GridKernel>(particles.size());
 
   collider_kernel = std::make_unique<ColliderKernel>(particles.size());
-  std::cout << "Running CPU + GPU simulation for " << frames << " frames.\n";
+  std::cout << "Running CPU + GPU simulation for " << frames << " frames." << std::endl;
   
   // 1. Initialize GPU Timer
   CudaUtils::Timer timer;
@@ -217,7 +217,7 @@ void Simulation::runGPU(int frames, float dt, const std::string &outputFolder, b
   std::cout << "Total Wall Time: " << diff.count() << " s\n";
   std::cout << "GPU Duration:    " << gpuTotalMs << " ms\n"; 
   std::cout << "Average Frame:   " << gpuAvgMs << " ms/frame\n";
-  std::cout << "------------------------------------------------\n";
+  std::cout << "------------------------------------------------" << std::endl;
 }
 
 const RGB Simulation::getRGBFromSpeed(float vx, float vy, float vz) {
@@ -263,7 +263,7 @@ void Simulation::testLoops(int frames, float dt, const std::string &outputFolder
     std::cout << "================================================\n";
     std::cout << "      BENCHMARKING: " << deviceName << "\n";
     std::cout << "      TOTAL SMs: " << totalSMs << "\n";
-    std::cout << "================================================\n";
+    std::cout << "================================================" << std::endl;
 
     // 2. Run 5 Equal Steps (20%, 40%, 60%, 80%, 100%)
     int steps = 5;
@@ -277,7 +277,7 @@ void Simulation::testLoops(int frames, float dt, const std::string &outputFolder
         std::string modeName = std::to_string((int)(percent * 100)) + "% Power (" + std::to_string(smLimit) + " SMs)";
         std::string dirName = "gpu_" + std::to_string((int)(percent * 100)) + "_percent";
 
-        std::cout << "\n--- [TEST " << i << "/" << steps << "] " << modeName << " ---\n";
+        std::cout << "\n--- [TEST " << i << "/" << steps << "] " << modeName << " ---" << std::endl;
         
         // Set the limit in CudaUtils
         CudaUtils::setGridLimit(smLimit);
@@ -291,7 +291,7 @@ void Simulation::testLoops(int frames, float dt, const std::string &outputFolder
     }
 
     // 3. Run Auto/Unlimited (Max Occupancy)
-    std::cout << "\n--- [TEST AUTO] Uncapped / Max Occupancy ---\n";
+    std::cout << "\n--- [TEST AUTO] Uncapped / Max Occupancy ---" << std::endl;
     CudaUtils::setGridLimit(0); 
     initializeParticles(N);
     runGPU(frames, dt, (rootPath / "gpu_max_auto").string(), doIO);
@@ -307,5 +307,5 @@ void Simulation::testLoops(int frames, float dt, const std::string &outputFolder
 
     std::cout << "\n================================================\n";
     std::cout << "             BENCHMARK COMPLETE                 \n";
-    std::cout << "================================================\n";
+    std::cout << "================================================" << std::endl;
 }

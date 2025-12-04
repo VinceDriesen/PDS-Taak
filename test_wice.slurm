@@ -14,9 +14,6 @@ source /data/leuven/303/vsc30380/slurmhooks
 module load CMake
 module load CUDA
 
-# Load CMake (Ensure this version is available and compatible)
-module load CMake
-
 # Check versions for debugging
 nvcc --version
 cmake --version

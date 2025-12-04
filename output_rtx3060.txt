@@ -1,0 +1,99 @@
+Initialized sphere with 200237 particles.
+================================================
+      BENCHMARKING: NVIDIA GeForce RTX 3060 Laptop GPU
+      TOTAL SMs: 30
+================================================
+
+--- [TEST 1/5] 20% Power (6 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 6 | Block: 768
+Kernel: BuildGridKernel | Grid: 6 | Block: 768
+Kernel: computeDensityKernel | Grid: 6 | Block: 768
+Kernel: computePressureKernel | Grid: 6 | Block: 768
+Kernel: computeForcesKernel | Grid: 6 | Block: 768
+Kernel: integrateKernel | Grid: 6 | Block: 768
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 124.014 s
+GPU Duration:    124014 ms
+Average Frame:   124.138 ms/frame
+------------------------------------------------
+
+--- [TEST 2/5] 40% Power (12 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 12 | Block: 768
+Kernel: BuildGridKernel | Grid: 12 | Block: 768
+Kernel: computeDensityKernel | Grid: 12 | Block: 768
+Kernel: computePressureKernel | Grid: 12 | Block: 768
+Kernel: computeForcesKernel | Grid: 12 | Block: 768
+Kernel: integrateKernel | Grid: 12 | Block: 768
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 90.4913 s
+GPU Duration:    90491.3 ms
+Average Frame:   90.5819 ms/frame
+------------------------------------------------
+
+--- [TEST 3/5] 60% Power (18 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 18 | Block: 768
+Kernel: BuildGridKernel | Grid: 18 | Block: 768
+Kernel: computeDensityKernel | Grid: 18 | Block: 768
+Kernel: computePressureKernel | Grid: 18 | Block: 768
+Kernel: computeForcesKernel | Grid: 18 | Block: 768
+Kernel: integrateKernel | Grid: 18 | Block: 768
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 79.8399 s
+GPU Duration:    79839.5 ms
+Average Frame:   79.9194 ms/frame
+------------------------------------------------
+
+--- [TEST 4/5] 80% Power (24 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 24 | Block: 768
+Kernel: BuildGridKernel | Grid: 24 | Block: 768
+Kernel: computeDensityKernel | Grid: 24 | Block: 768
+Kernel: computePressureKernel | Grid: 24 | Block: 768
+Kernel: computeForcesKernel | Grid: 24 | Block: 768
+Kernel: integrateKernel | Grid: 24 | Block: 768
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 74.9723 s
+GPU Duration:    74972.1 ms
+Average Frame:   75.0471 ms/frame
+------------------------------------------------
+
+--- [TEST 5/5] 100% Power (30 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 30 | Block: 768
+Kernel: BuildGridKernel | Grid: 30 | Block: 768
+Kernel: computeDensityKernel | Grid: 30 | Block: 768
+Kernel: computePressureKernel | Grid: 30 | Block: 768
+Kernel: computeForcesKernel | Grid: 30 | Block: 768
+Kernel: integrateKernel | Grid: 30 | Block: 768
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 73.5295 s
+GPU Duration:    73529.3 ms
+Average Frame:   73.6029 ms/frame
+------------------------------------------------
+
+--- [TEST AUTO] Uncapped / Max Occupancy ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 262 | Block: 768
+Kernel: BuildGridKernel | Grid: 262 | Block: 768
+Kernel: computeDensityKernel | Grid: 262 | Block: 768
+Kernel: computePressureKernel | Grid: 262 | Block: 768
+Kernel: computeForcesKernel | Grid: 262 | Block: 768
+Kernel: integrateKernel | Grid: 262 | Block: 768
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 75.8523 s
+GPU Duration:    75852.2 ms
+Average Frame:   75.9281 ms/frame
+------------------------------------------------
+
+================================================
+             BENCHMARK COMPLETE                 
+================================================
