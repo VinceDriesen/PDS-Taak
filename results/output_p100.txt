@@ -1,0 +1,91 @@
+Initialized sphere with 200237 particles.
+================================================
+      BENCHMARKING: Tesla P100-SXM2-16GB
+      TOTAL SMs: 56
+================================================
+
+--- [TEST 1/5] 20% Power (11 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 11 | Block: 1024
+Kernel: BuildGridKernel | Grid: 11 | Block: 1024
+Kernel: computeDensityKernel | Grid: 11 | Block: 1024
+Kernel: computePressureKernel | Grid: 11 | Block: 1024
+Kernel: computeForcesKernel | Grid: 11 | Block: 800
+Kernel: integrateKernel | Grid: 11 | Block: 1024
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 144.222 s
+GPU Duration:    144220 ms
+Average Frame:   144.364 ms/frame
+------------------------------------------------
+
+--- [TEST 2/5] 40% Power (22 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 22 | Block: 1024
+Kernel: BuildGridKernel | Grid: 22 | Block: 1024
+Kernel: computeDensityKernel | Grid: 22 | Block: 1024
+Kernel: computePressureKernel | Grid: 22 | Block: 1024
+Kernel: computeForcesKernel | Grid: 22 | Block: 800
+Kernel: integrateKernel | Grid: 22 | Block: 1024
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 84.1138 s
+GPU Duration:    84112.5 ms
+Average Frame:   84.1967 ms/frame
+------------------------------------------------
+
+--- [TEST 3/5] 60% Power (33 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 33 | Block: 1024
+Kernel: BuildGridKernel | Grid: 33 | Block: 1024
+Kernel: computeDensityKernel | Grid: 33 | Block: 1024
+Kernel: computePressureKernel | Grid: 33 | Block: 1024
+Kernel: computeForcesKernel | Grid: 33 | Block: 800
+Kernel: integrateKernel | Grid: 33 | Block: 1024
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 64.4282 s
+GPU Duration:    64427.2 ms
+Average Frame:   64.4917 ms/frame
+------------------------------------------------
+
+--- [TEST 4/5] 80% Power (44 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 44 | Block: 1024
+Kernel: BuildGridKernel | Grid: 44 | Block: 1024
+Kernel: computeDensityKernel | Grid: 44 | Block: 1024
+Kernel: computePressureKernel | Grid: 44 | Block: 1024
+Kernel: computeForcesKernel | Grid: 44 | Block: 800
+Kernel: integrateKernel | Grid: 44 | Block: 1024
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 56.6405 s
+GPU Duration:    56639.5 ms
+Average Frame:   56.6962 ms/frame
+------------------------------------------------
+
+--- [TEST 5/5] 100% Power (56 SMs) ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 56 | Block: 1024
+Kernel: BuildGridKernel | Grid: 56 | Block: 1024
+Kernel: computeDensityKernel | Grid: 56 | Block: 1024
+Kernel: computePressureKernel | Grid: 56 | Block: 1024
+Kernel: computeForcesKernel | Grid: 56 | Block: 800
+Kernel: integrateKernel | Grid: 56 | Block: 1024
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------
+Total Wall Time: 51.2173 s
+GPU Duration:    51216.5 ms
+Average Frame:   51.2678 ms/frame
+------------------------------------------------
+
+--- [TEST AUTO] Uncapped / Max Occupancy ---
+Initialized sphere with 200477 particles.
+Kernel: UpdateSimulationKernel | Grid: 196 | Block: 1024
+Kernel: BuildGridKernel | Grid: 196 | Block: 1024
+Kernel: computeDensityKernel | Grid: 196 | Block: 1024
+Kernel: computePressureKernel | Grid: 196 | Block: 1024
+Kernel: computeForcesKernel | Grid: 251 | Block: 800
+Kernel: integrateKernel | Grid: 196 | Block: 1024
+Running CPU + GPU simulation for 999 frames.
+------------------------------------------------------------------------------
