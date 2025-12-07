@@ -88,4 +88,12 @@ Kernel: computePressureKernel | Grid: 196 | Block: 1024
 Kernel: computeForcesKernel | Grid: 251 | Block: 800
 Kernel: integrateKernel | Grid: 196 | Block: 1024
 Running CPU + GPU simulation for 999 frames.
-------------------------------------------------------------------------------
+------------------------------------------------
+Total Wall Time: 58.0602 s
+GPU Duration:    58059.5 ms
+Average Frame:   58.1176 ms/frame
+------------------------------------------------
+
+================================================
+             BENCHMARK COMPLETE                 
+================================================

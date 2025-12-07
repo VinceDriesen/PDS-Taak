@@ -268,27 +268,27 @@ void Simulation::testLoops(int frames, float dt, const std::string &outputFolder
     // 2. Run 5 Equal Steps (20%, 40%, 60%, 80%, 100%)
     int steps = 5;
 
-    // for (int i = 1; i <= steps; i++) {
-    //     float percent = (float)i / steps;
+    for (int i = 1; i <= steps; i++) {
+        float percent = (float)i / steps;
         
-    //     // Calculate limit: Ensure at least 1 SM is used
-    //     int smLimit = std::max(1, (int)(totalSMs * percent));
+        // Calculate limit: Ensure at least 1 SM is used
+        int smLimit = std::max(1, (int)(totalSMs * percent));
 
-    //     std::string modeName = std::to_string((int)(percent * 100)) + "% Power (" + std::to_string(smLimit) + " SMs)";
-    //     std::string dirName = "gpu_" + std::to_string((int)(percent * 100)) + "_percent";
+        std::string modeName = std::to_string((int)(percent * 100)) + "% Power (" + std::to_string(smLimit) + " SMs)";
+        std::string dirName = "gpu_" + std::to_string((int)(percent * 100)) + "_percent";
 
-    //     std::cout << "\n--- [TEST " << i << "/" << steps << "] " << modeName << " ---" << std::endl;
+        std::cout << "\n--- [TEST " << i << "/" << steps << "] " << modeName << " ---" << std::endl;
         
-    //     // Set the limit in CudaUtils
-    //     CudaUtils::setGridLimit(smLimit);
+        // Set the limit in CudaUtils
+        CudaUtils::setGridLimit(smLimit);
 
-    //     initializeParticles(N);
+        initializeParticles(N);
 
-    //     fs::path gpuDir = rootPath / dirName;
-    //     fs::create_directories(gpuDir);
+        fs::path gpuDir = rootPath / dirName;
+        fs::create_directories(gpuDir);
 
-    //     runGPU(frames, dt, gpuDir.string(), doIO);
-    // }
+        runGPU(frames, dt, gpuDir.string(), doIO);
+    }
 
     // 3. Run Auto/Unlimited (Max Occupancy)
     std::cout << "\n--- [TEST AUTO] Uncapped / Max Occupancy ---" << std::endl;
