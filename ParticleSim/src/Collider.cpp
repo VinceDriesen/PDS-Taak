@@ -2,9 +2,6 @@
 #include "Config.h"
 #include <algorithm>
 #include <cmath>
-#include <iostream>
-
-// --- KERNELS ---
 
 static float W_poly6(float r, float h) {
   if (r >= 0 && r <= h) {
@@ -32,8 +29,6 @@ static float laplacianW_viscosity(float r, float h) {
   }
   return 0.0f;
 }
-
-// --- BOUNDARY CHECKS ---
 
 void Collider::isOutOfBounds(Particle &particle) {
   if (isXOutOfBounds(particle))
@@ -77,9 +72,7 @@ bool Collider::isZOutOfBounds(Particle &particle) {
   return false;
 }
 
-void Collider::reverseXVelocity(Particle &particle) {
-  particle.vx *= -0.5f;
-} // Iets meer demping op muren
+void Collider::reverseXVelocity(Particle &particle) { particle.vx *= -0.5f; }
 void Collider::reverseYVelocity(Particle &particle) { particle.vy *= -0.5f; }
 void Collider::reverseZVelocity(Particle &particle) { particle.vz *= -0.5f; }
 
@@ -133,10 +126,6 @@ void Collider::resolveParticleCollision(Particle &A, Particle &B) {
 
 void Collider::checkCollions(const Grid &grid,
                              std::vector<Particle> &particles) {
-  // Deze functie laten we intact als "Backup" systeem
-  // (code weggelaten voor leesbaarheid, maar hou je originele implementatie
-  // hier)
-  // ... jouw originele loops die resolveParticleCollision aanroepen ...
   const auto &cells = grid.getCells();
   int Nx = grid.getNx();
   int Ny = grid.getNy();
@@ -169,8 +158,6 @@ void Collider::checkCollions(const Grid &grid,
   }
 }
 
-// --- PHYSICS UPDATE ---
-
 void Collider::applyPressure(const Grid &grid, std::vector<Particle> &particles,
                              float dt) {
   int N = particles.size();
@@ -189,7 +176,7 @@ void Collider::applyPressure(const Grid &grid, std::vector<Particle> &particles,
   const auto &cells = grid.getCells();
   int Nx = grid.getNx(), Ny = grid.getNy(), Nz = grid.getNz();
 
-  // 1️⃣ Density Loop (Self-density MOET meegeteld worden)
+  // Density Loop
   for (int cz = 0; cz < Nz; ++cz)
     for (int cy = 0; cy < Ny; ++cy)
       for (int cx = 0; cx < Nx; ++cx) {
@@ -219,14 +206,14 @@ void Collider::applyPressure(const Grid &grid, std::vector<Particle> &particles,
             }
       }
 
-  // 2️⃣ Pressure Calculation (Non-negative)
+  // Pressure Calculation (Non-negative)
   for (int i = 0; i < N; ++i) {
     if (rho[i] < 0.001f)
       rho[i] = 0.001f; // Veiligheid
     pressure[i] = std::max(0.0f, k * (rho[i] - rho0));
   }
 
-  // 3️⃣ Force Loop (Pressure + Viscosity + Repulsion)
+  // Force Loop (Pressure + Viscosity + Repulsion)
   for (int cz = 0; cz < Nz; ++cz)
     for (int cy = 0; cy < Ny; ++cy)
       for (int cx = 0; cx < Nx; ++cx) {
@@ -265,7 +252,6 @@ void Collider::applyPressure(const Grid &grid, std::vector<Particle> &particles,
                                     (pressure[i] / (rho[i] * rho[i]) +
                                      pressure[j] / (rho[j] * rho[j]));
 
-                  // De "Veiligheidsgordel"
                   if (pressTerm > maxF)
                     pressTerm = maxF;
                   if (pressTerm < -maxF)
@@ -287,7 +273,7 @@ void Collider::applyPressure(const Grid &grid, std::vector<Particle> &particles,
                   float f_visc_y = viscTerm * vy_diff;
                   float f_visc_z = viscTerm * vz_diff;
 
-                  // --- B. REPULSION KRACHT (De Piek) ---
+                  // REPULSION KRACHT
                   // Werkt alleen als ze elkaar fysiek raken (r < diameter)
                   float f_repulse_x = 0, f_repulse_y = 0, f_repulse_z = 0;
 
@@ -306,7 +292,7 @@ void Collider::applyPressure(const Grid &grid, std::vector<Particle> &particles,
                     f_repulse_z = repulseForce * nz;
                   }
 
-                  // --- TOTALE KRACHT OPTELLEN ---
+                  // TOTALE KRACHT OPTELLEN
                   float total_fx = f_press_x + f_visc_x + f_repulse_x;
                   float total_fy = f_press_y + f_visc_y + f_repulse_y;
                   float total_fz = f_press_z + f_visc_z + f_repulse_z;
@@ -323,7 +309,7 @@ void Collider::applyPressure(const Grid &grid, std::vector<Particle> &particles,
             }
       }
 
-  // 4️⃣ Update Velocities
+  // Update Velocities
   for (int i = 0; i < N; ++i) {
     particles[i].vx += dt * fx[i] / mass;
     particles[i].vy += dt * fy[i] / mass;

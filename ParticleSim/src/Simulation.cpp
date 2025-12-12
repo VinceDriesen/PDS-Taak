@@ -56,18 +56,14 @@ void Simulation::initializeParticles(int N) {
           float py = cy + j * spacing;
           float pz = cz + k * spacing;
 
-          // Bereken afstand tot het midden (Pythagoras in 3D)
           float distSq = (px - cx) * (px - cx) + (py - cy) * (py - cy) +
                          (pz - cz) * (pz - cz);
 
-          // Als het deeltje binnen de straal valt, voegen we het toe
           if (distSq <= sphereRadius * sphereRadius) {
             Particle p;
 
-            // --- SYMMETRIE BREKEN ---
             // Voeg een minuscuul beetje ruis toe ("Jitter").
             // Dit zorgt ervoor dat buren niet meer PRECIES tegenover elkaar
-            // staan, waardoor de pressure force ze opzij kan duwen.
             float jitter = spacing * 0.01f; // 1% variatie
             float rx = ((rand() % 100) / 100.0f - 0.5f) * jitter;
             float ry = ((rand() % 100) / 100.0f - 0.5f) * jitter;
@@ -231,17 +227,17 @@ const RGB Simulation::getRGBFromSpeed(float vx, float vy, float vz) {
   if (t < 0.33f) {
     float local_t = t / 0.33f;
     c.r = 0.0f;
-    c.g = local_t; // 0.0 -> 1.0
+    c.g = local_t;
     c.b = 1.0f;
   } else if (t < 0.66f) {
     float local_t = (t - 0.33f) / 0.33f;
-    c.r = local_t; // 0.0 -> 1.0
+    c.r = local_t;
     c.g = 1.0f;
-    c.b = 1.0f - local_t; // 1.0 -> 0.0
+    c.b = 1.0f - local_t;
   } else {
     float local_t = (t - 0.66f) / 0.34f;
     c.r = 1.0f;
-    c.g = 1.0f - local_t; // 1.0 -> 0.0
+    c.g = 1.0f - local_t;
     c.b = 0.0f;
   }
 
@@ -256,7 +252,6 @@ void Simulation::testLoops(int frames, float dt, const std::string &outputFolder
     fs::path rootPath(outputFolder);
     if (!fs::exists(rootPath)) fs::create_directories(rootPath);
 
-    // 1. Get Device Info via CudaUtils
     int totalSMs = CudaUtils::getSMCount();
     std::string deviceName = CudaUtils::getDeviceName();
     
@@ -271,7 +266,6 @@ void Simulation::testLoops(int frames, float dt, const std::string &outputFolder
     for (int i = 1; i <= steps; i++) {
         float percent = (float)i / steps;
         
-        // Calculate limit: Ensure at least 1 SM is used
         int smLimit = std::max(1, (int)(totalSMs * percent));
 
         std::string modeName = std::to_string((int)(percent * 100)) + "% Power (" + std::to_string(smLimit) + " SMs)";

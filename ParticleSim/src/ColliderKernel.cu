@@ -289,7 +289,6 @@ void ColliderKernel::update(Particle* d_particles,
     float spikyCoeff = -45.0f / (pi * powf(h, 6));
     float viscCoeff = 45.0f / (pi * powf(h, 6));
 
-    // 1. Density
     computeDensityKernel<<<gridSize_density, blockSize_density>>>(
         d_particles, m_numParticles, d_gridHead, d_particleNext,
         d_rho, 
@@ -297,12 +296,10 @@ void ColliderKernel::update(Particle* d_particles,
         poly6Coeff // Pass coeff as arg, others are in Config
     );
 
-    // 2. Pressure
     computePressureKernel<<<gridSize_pressure, blockSize_pressure>>>(
         d_rho, d_pressure, m_numParticles
     );
     
-    // 3. Forces
     computeForcesKernel<<<gridSize_force, blockSize_force>>>(
         d_particles, m_numParticles, d_gridHead, d_particleNext,
         d_rho, d_pressure, d_fx, d_fy, d_fz,
@@ -310,7 +307,6 @@ void ColliderKernel::update(Particle* d_particles,
         spikyCoeff, viscCoeff
     );
 
-    // 4. Integration
     integrateKernel<<<gridSize_integrate, blockSize_integrate>>>(
         d_particles, m_numParticles, d_fx, d_fy, d_fz,
         dt

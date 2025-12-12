@@ -15,7 +15,6 @@ struct LaunchConfig
 class CudaUtils 
 {
 public:
-    // --- New: RAII GPU Timer ---
     struct Timer 
     {
         cudaEvent_t _start, _stop;
@@ -38,7 +37,6 @@ public:
             cudaEventRecord(_stop, stream);
         }
 
-        // Returns time in milliseconds
         float elapsed() {
             cudaEventSynchronize(_stop);
             float milliseconds = 0;
@@ -46,8 +44,6 @@ public:
             return milliseconds;
         }
     };
-
-    // --- Device Helpers ---
 
     static int getSMCount()
     {
@@ -66,8 +62,6 @@ public:
         cudaGetDeviceProperties(&prop, deviceId);
         return std::string(prop.name);
     }
-
-    // --- Configuration Logic ---
 
     static void setGridLimit(int limit)
     {
@@ -91,7 +85,6 @@ public:
             finalGridSize = std::min(optimalGrids, limit);
         }
 
-        // Reduced verbosity for benchmark loops
         printf("Kernel: %s | Grid: %d | Block: %d\n", kernelName, finalGridSize, blockSize);
 
         return {finalGridSize, blockSize};

@@ -21,7 +21,7 @@ private:
 
   float xmin, ymin, zmin;
 
-  std::vector<std::vector<int>> cells; // cell → list of particle indices
+  std::vector<std::vector<int>> cells;
 
   int computeCellIndex(float x, float y, float z) const;
 };

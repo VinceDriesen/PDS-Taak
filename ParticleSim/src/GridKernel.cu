@@ -30,7 +30,6 @@ __global__ void buildGridKernel(Particle* particles, int numParticles,
     for (int i = index; i < numParticles; i += stride)
     {
         // Calculate which cell this particle belongs to
-        // We pass Nx, Ny, Nz because grid dimensions depend on the bounds size
         int cellIndex = getCellIndex(particles[i].x, particles[i].y, particles[i].z, Nx, Ny, Nz);
     
         // Insert into linked list (Atomic Exchange)
@@ -42,14 +41,12 @@ __global__ void buildGridKernel(Particle* particles, int numParticles,
 GridKernel::GridKernel(int numParticles)
     : numParticles(numParticles)
 {
-    // Store local copies for getters/host logic, though kernel uses Config directly
     this->cellSize = Config::smoothingRadius;
     this->xmin = Config::xmin;
     this->ymin = Config::ymin;
     this->zmin = Config::zmin;
     this->invCellSize = 1.0f / cellSize;
     
-    // Calculate dimensions on host
     this->Nx = (int)std::ceil((Config::xmax - Config::xmin) * invCellSize);
     this->Ny = (int)std::ceil((Config::ymax - Config::ymin) * invCellSize);
     this->Nz = (int)std::ceil((Config::zmax - Config::zmin) * invCellSize);
