@@ -13,12 +13,13 @@ public:
     ColliderKernel& operator=(const ColliderKernel&) = delete;
 
     void update(Particle* d_particles, 
-                int* d_gridHead, int* d_particleNext,
-                float cellSize, int Nx, int Ny, int Nz, float dt);
+                int* d_gridHead, int* d_particleNext, int Nx, int Ny, int Nz, float dt);
 
 private:
+    // Arrays to store intermetiate results, allocated on GPU
     float *d_rho, *d_pressure;
     float *d_fx, *d_fy, *d_fz;
+
     int numParticles;
 
     LaunchConfig launchConfigDensity;

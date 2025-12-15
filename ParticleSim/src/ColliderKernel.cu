@@ -72,7 +72,7 @@ __global__ void computeDensityKernel(
             }
         }
         
-        // Clamp minimal density to avoid division by zero later
+        // Clamp minimal density to avoid division by zero
         rho[i] = (density < 0.0001f) ? 0.0001f : density; 
     }
 }
@@ -84,6 +84,7 @@ __global__ void computePressureKernel(float* rho, float* pressure, int numPartic
 
     for (int i = index; i < numParticles; i += stride)
     {
+        // Compute pressure from density and base density
         pressure[i] = fmaxf(0.0f, Config::stiffness * (rho[i] - Config::restDensity));
     }
 }
@@ -101,18 +102,15 @@ __global__ void computeForcesKernel(
 
     for (int i = index; i < numParticles; i += stride)
     {
-
-        // 1. Cache current particle data
+        // Cache particle data
         float3 pos = make_float3(particles[i].x, particles[i].y, particles[i].z);
         float3 vel = make_float3(particles[i].vx, particles[i].vy, particles[i].vz);
         float pi = pressure[i];
         
-        // 2. Prepare accumulators
         float force_x = 0.0f;
         float force_y = 0.0f;
         float force_z = 0.0f;
     
-        // 3. Config Constants
         const float h = Config::smoothingRadius;
         const float h2 = h * h;
         const float mass = Config::particleMass;
@@ -123,7 +121,7 @@ __global__ void computeForcesKernel(
         int gy = (int)((pos.y - Config::ymin) * invCellSize);
         int gz = (int)((pos.z - Config::zmin) * invCellSize);
     
-        // 4. Neighbor Search
+        // Neighbor Search
         for (int k = -1; k <= 1; k++) {
             for (int j = -1; j <= 1; j++) {
                 for (int l = -1; l <= 1; l++) {
@@ -152,7 +150,7 @@ __global__ void computeForcesKernel(
                                     float rho_j = rho[neighbor];
                                     float invRhoJ = 1.0f / rho_j;
                                     
-                                    // --- Pressure Force ---
+                                    // Pressure Force
                                     float pressTerm = -0.5f * mass * (pi + pj) * invRhoJ;
                                     float gradW = spikyCoeff * h_minus_r * h_minus_r;
                                     float fPress = pressTerm * gradW;
@@ -166,7 +164,7 @@ __global__ void computeForcesKernel(
                                     force_y += fPress * dy * invR;
                                     force_z += fPress * dz * invR;
     
-                                    // --- Viscosity Force ---
+                                    // Viscosity Force
                                     float3 nVel = make_float3(particles[neighbor].vx, particles[neighbor].vy, particles[neighbor].vz);
                                     float laplacianW = viscCoeff * h_minus_r;
                                     float viscTerm = mass * viscosity * invRhoJ * laplacianW;
@@ -175,7 +173,7 @@ __global__ void computeForcesKernel(
                                     force_y += viscTerm * (nVel.y - vel.y);
                                     force_z += viscTerm * (nVel.z - vel.z);
                                     
-                                    // --- Repulsion Force (Collision) ---
+                                    // Repulsion Force (Collision)
                                     if (r < Config::diameter) {
                                         float repForce = Config::repulsionStiffness * (Config::diameter - r);
                                         force_x += repForce * dx * invR;
@@ -207,7 +205,7 @@ __global__ void integrateKernel(Particle* particles, int numParticles,
     for (int i = index; i < numParticles; i += stride)
     {
 
-        // 1. Read Globals to Registers
+        // Cache values
         float p_x = particles[i].x;
         float p_y = particles[i].y;
         float p_z = particles[i].z;
@@ -218,22 +216,22 @@ __global__ void integrateKernel(Particle* particles, int numParticles,
         float invMass = 1.0f / Config::particleMass;
         const float damping = -0.5f;
     
-        // 2. Update Velocity
+        // Update Velocity based on calculated force
         p_vx += (fx[i] * invMass) * dt;
         p_vy += (fy[i] * invMass + Config::gravity) * dt;
         p_vz += (fz[i] * invMass) * dt;
     
-        // 3. Update Position
+        // Update Position
         p_x += p_vx * dt;
         p_y += p_vy * dt;
         p_z += p_vz * dt;
     
-        // 4. Boundary Checks
+        // Boundary Checks
         checkBoundary(p_x, p_vx, Config::xmin, Config::xmax, damping);
         checkBoundary(p_y, p_vy, Config::ymin, Config::ymax, damping);
         checkBoundary(p_z, p_vz, Config::zmin, Config::zmax, damping);
     
-        // 5. Write Back
+        // Write Back
         particles[i].x = p_x;
         particles[i].y = p_y;
         particles[i].z = p_z;
@@ -246,12 +244,14 @@ __global__ void integrateKernel(Particle* particles, int numParticles,
 ColliderKernel::ColliderKernel(int numParticles)
     : numParticles(numParticles)
 {
+    // Allocate the intermetiate values calculated by each kernel
     cudaMalloc(&d_rho, numParticles * sizeof(float));
     cudaMalloc(&d_pressure, numParticles * sizeof(float));
     cudaMalloc(&d_fx, numParticles * sizeof(float));
     cudaMalloc(&d_fy, numParticles * sizeof(float));
     cudaMalloc(&d_fz, numParticles * sizeof(float));
 
+    // Get the launchConfigs of each kernel
     launchConfigDensity = CudaUtils::getOptimalConfig(computeDensityKernel, numParticles, "computeDensityKernel");
     launchConfigPressure = CudaUtils::getOptimalConfig(computePressureKernel, numParticles, "computePressureKernel");
     launchConfigFoce = CudaUtils::getOptimalConfig(computeForcesKernel, numParticles, "computeForcesKernel");
@@ -259,18 +259,22 @@ ColliderKernel::ColliderKernel(int numParticles)
 }
 
 ColliderKernel::~ColliderKernel() {
-    cudaFree(d_rho); 
-    cudaFree(d_pressure);
-    cudaFree(d_fx); 
-    cudaFree(d_fy); 
-    cudaFree(d_fz);
+    if(d_rho)
+        cudaFree(d_rho); 
+    if(d_pressure)
+        cudaFree(d_pressure);
+    if(d_fx)
+        cudaFree(d_fx);
+    if(d_fy) 
+        cudaFree(d_fy);
+    if(d_fz) 
+        cudaFree(d_fz);
 }
 
 void ColliderKernel::update(Particle* d_particles, 
-                            int* d_gridHead, int* d_particleNext,
-                            float cellSize, int Nx, int Ny, int Nz, float dt) 
+                            int* d_gridHead, int* d_particleNext, int Nx, int Ny, int Nz, float dt) 
 {
-    // Compute SPH Kernel Coefficients
+    // Compute SPH Kernel Coefficients on CPU and store
     float h = Config::smoothingRadius;
     float pi = (float)M_PI;
     
@@ -278,11 +282,12 @@ void ColliderKernel::update(Particle* d_particles,
     float spikyCoeff = -45.0f / (pi * powf(h, 6));
     float viscCoeff = 45.0f / (pi * powf(h, 6));
 
+    // Launch each kernel separatly
     computeDensityKernel<<<launchConfigDensity.gridSize, launchConfigDensity.blockSize>>>(
         d_particles, numParticles, d_gridHead, d_particleNext,
         d_rho, 
         Nx, Ny, Nz, 
-        poly6Coeff // Pass coeff as arg, others are in Config
+        poly6Coeff
     );
 
     computePressureKernel<<<launchConfigPressure.gridSize, launchConfigPressure.blockSize>>>(
