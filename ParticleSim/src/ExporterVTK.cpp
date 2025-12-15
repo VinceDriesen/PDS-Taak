@@ -21,9 +21,8 @@ void ExporterVTK::saveVTKFile(const std::vector<Particle> &particles,
   file << "POINT_DATA " << particles.size() << "\n";
   file << "SCALARS particleColor float 3\n";
   file << "LOOKUP_TABLE default\n";
-  
+
   for (const auto &p : particles) {
-    // Schrijf ze weg als floats (0.0 - 1.0)
     file << p.r << " " << p.g << " " << p.b << "\n";
   }
 
@@ -39,7 +38,6 @@ void ExporterVTK::saveBoxVTK(const std::string &filename, float xmin,
   file << "ASCII\n";
   file << "DATASET POLYDATA\n";
 
-  // 8 corners
   file << "POINTS 8 float\n";
   file << xmin << " " << ymin << " " << zmin << "\n"; // 0
   file << xmax << " " << ymin << " " << zmin << "\n"; // 1
@@ -50,7 +48,6 @@ void ExporterVTK::saveBoxVTK(const std::string &filename, float xmin,
   file << xmax << " " << ymax << " " << zmax << "\n"; // 6
   file << xmin << " " << ymax << " " << zmax << "\n"; // 7
 
-  // LINES: 12 edges, elke lijn: npts + indices
   file << "LINES 12 " << 12 * 3 << "\n";
   file << "2 0 1\n";
   file << "2 1 2\n";
