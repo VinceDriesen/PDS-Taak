@@ -1,6 +1,7 @@
 #ifndef GRID_KERNEL_CUH
 #define GRID_KERNEL_CUH
 
+#include "CudaUtils.cuh"
 #include "Particle.h"
 #include <cuda_runtime.h>
 
@@ -16,18 +17,18 @@ public:
     int* getGridHead() const { return d_gridHead; }
     int* getParticleNext() const { return d_particleNext; }
     
-    float getCellSize() const { return cellSize; }
     int getNx() const { return Nx; }
     int getNy() const { return Ny; }
     int getNz() const { return Nz; }
 
 private:
     int Nx, Ny, Nz;
-    float cellSize, invCellSize;
-    float xmin, ymin, zmin;
+    float invCellSize;
 
     int totalCells;
     int numParticles;
+
+    LaunchConfig launchConfig;
 
     int blockSize;
     int gridSize;

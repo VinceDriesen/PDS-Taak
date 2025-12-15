@@ -149,8 +149,8 @@ void Simulation::updateGpu(float dt)
         d_particles, 
         grid_kernel->getGridHead(),
         grid_kernel->getParticleNext(),
-        grid_kernel->getCellSize(),     
-        grid_kernel->getNx(), 
+        Config::smoothingRadius,     
+        grid_kernel->getNx(),
         grid_kernel->getNy(), 
         grid_kernel->getNz(), 
         dt

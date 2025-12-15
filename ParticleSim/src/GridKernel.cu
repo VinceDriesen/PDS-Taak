@@ -8,6 +8,7 @@ __device__ int getCellIndex(float x, float y, float z, int Nx, int Ny, int Nz)
 {
     const float invCellSize = 1.0f / Config::smoothingRadius;
 
+    // Get the integer grid position
     int cx = (int)((x - Config::xmin) * invCellSize);
     int cy = (int)((y - Config::ymin) * invCellSize);
     int cz = (int)((z - Config::zmin) * invCellSize);
@@ -41,24 +42,20 @@ __global__ void buildGridKernel(Particle* particles, int numParticles,
 GridKernel::GridKernel(int numParticles)
     : numParticles(numParticles)
 {
-    this->cellSize = Config::smoothingRadius;
-    this->xmin = Config::xmin;
-    this->ymin = Config::ymin;
-    this->zmin = Config::zmin;
-    this->invCellSize = 1.0f / cellSize;
-    
+    this->invCellSize = 1.0f / Config::smoothingRadius;
+ 
+    // Integer Boundaries of the Grid
     this->Nx = (int)std::ceil((Config::xmax - Config::xmin) * invCellSize);
     this->Ny = (int)std::ceil((Config::ymax - Config::ymin) * invCellSize);
     this->Nz = (int)std::ceil((Config::zmax - Config::zmin) * invCellSize);
     
     this->totalCells = Nx * Ny * Nz;
 
+    // Allocate GPU Memory
     cudaMalloc(&d_gridHead, totalCells * sizeof(int));
     cudaMalloc(&d_particleNext, numParticles * sizeof(int));
 
-    auto launchConfig = CudaUtils::getOptimalConfig(buildGridKernel, numParticles, "BuildGridKernel");
-    this->blockSize = launchConfig.blockSize;
-    this->gridSize = launchConfig.gridSize;
+    launchConfig = CudaUtils::getOptimalConfig(buildGridKernel, numParticles, "BuildGridKernel");
 }
 
 GridKernel::~GridKernel() {
@@ -69,7 +66,7 @@ GridKernel::~GridKernel() {
 void GridKernel::build(Particle* d_particles) {
     cudaMemset(d_gridHead, -1, totalCells * sizeof(int));
 
-    buildGridKernel<<<gridSize, blockSize>>>(
+    buildGridKernel<<<launchConfig.gridSize, launchConfig.blockSize>>>(
         d_particles, numParticles, 
         d_gridHead, d_particleNext,
         Nx, Ny, Nz

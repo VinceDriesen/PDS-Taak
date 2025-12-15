@@ -7,32 +7,24 @@
 #SBATCH --output="%x_%j.out"
 #SBATCH --error="%x_%j.err"
 
-# 1. Load Environment
 source /data/leuven/303/vsc30380/slurmhooks
 
-# Load the compilers you confirmed work
 module load CMake
 module load CUDA
 
-# Check versions for debugging
-nvcc --version
-cmake --version
-
-# --- CONFIGURATION ---
 REPO_URL="https://github.com/VinceDriesen/PDS-Taak.git"
 REPO_ROOT="my_gpu_project"    # The folder git creates
 SUB_DIR="ParticleSim"         # The folder containing CMakeLists.txt
 BUILD_DIR="build"             # The build directory
 EXE_PATH="bin/particlesim"    # The binary location (relative to build dir)
-# ---------------------
 
-# 2. Clone/Update
+# 2. Clone or Update
 if [ -d "$REPO_ROOT" ]; then
-    echo "Updating repository..."
+    echo "Updating repo..."
     cd "$REPO_ROOT"
     git pull
 else
-    echo "Cloning repository..."
+    echo "Cloning repo..."
     git clone "$REPO_URL" "$REPO_ROOT"
     cd "$REPO_ROOT"
 fi
@@ -46,14 +38,10 @@ else
 fi
 
 echo "Configuring CMake..."
-# Generate build files
 cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release .
 
 echo "Compiling..."
-# Build using 18 CPUs for speed
-cmake --build "$BUILD_DIR" --parallel "$SLURM_CPUS_PER_TASK"
+cmake --build "$BUILD_DIR"
 
-# 4. Run
 echo "Starting simulation..."
-# The executable is inside build/bin/particlesim based on your description
 ./"$EXE_PATH" test nocpu noio
