@@ -10,3 +10,4 @@ In Proceedings of the 2003 ACM SIGGRAPH/Eurographics symposium on Computer anima
 - Uitschrijven naar de VTK files
 - Herschrijven van stukken code voor duidelijkheid en cleanup
 - Code optimalisatiesuggesties zonder effectieve code -> zodat we zelf deze optimalisaties konden programmeren.
+Zie doorheen de code voor specifieke vermeldingen
