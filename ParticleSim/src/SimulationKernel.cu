@@ -76,7 +76,7 @@ SimulationKernel::SimulationKernel(Particle* particles, size_t numParticles)
         : particles(particles), numParticles(numParticles) 
 {
     // Allocate GPU Memory
-    cudaMalloc(&_d_particles, numParticles * sizeof(Particle));
+    cudaMalloc(&d_particles, numParticles * sizeof(Particle));
 
     // Copy the Bounds and Config Settings
     bounds = BoundsCuda{

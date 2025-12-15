@@ -244,29 +244,18 @@ __global__ void integrateKernel(Particle* particles, int numParticles,
 }
 
 ColliderKernel::ColliderKernel(int numParticles)
-    : m_numParticles(numParticles)
+    : numParticles(numParticles)
 {
-    cudaMalloc(&d_rho, m_numParticles * sizeof(float));
-    cudaMalloc(&d_pressure, m_numParticles * sizeof(float));
-    cudaMalloc(&d_fx, m_numParticles * sizeof(float));
-    cudaMalloc(&d_fy, m_numParticles * sizeof(float));
-    cudaMalloc(&d_fz, m_numParticles * sizeof(float));
+    cudaMalloc(&d_rho, numParticles * sizeof(float));
+    cudaMalloc(&d_pressure, numParticles * sizeof(float));
+    cudaMalloc(&d_fx, numParticles * sizeof(float));
+    cudaMalloc(&d_fy, numParticles * sizeof(float));
+    cudaMalloc(&d_fz, numParticles * sizeof(float));
 
-    auto launchConfigDensity = CudaUtils::getOptimalConfig(computeDensityKernel, numParticles, "computeDensityKernel");
-    this->blockSize_density = launchConfigDensity.blockSize;
-    this->gridSize_density = launchConfigDensity.gridSize;
-
-    auto launchConfigPressure = CudaUtils::getOptimalConfig(computePressureKernel, numParticles, "computePressureKernel");
-    this->blockSize_pressure = launchConfigPressure.blockSize;
-    this->gridSize_pressure = launchConfigPressure.gridSize;
-
-    auto launchConfigFoce = CudaUtils::getOptimalConfig(computeForcesKernel, numParticles, "computeForcesKernel");
-    this->blockSize_force = launchConfigFoce.blockSize;
-    this->gridSize_force = launchConfigFoce.gridSize;
-
-    auto launchConfigIntegrate = CudaUtils::getOptimalConfig(integrateKernel, numParticles, "integrateKernel");
-    this->blockSize_integrate = launchConfigIntegrate.blockSize;
-    this->gridSize_integrate = launchConfigIntegrate.gridSize;
+    launchConfigDensity = CudaUtils::getOptimalConfig(computeDensityKernel, numParticles, "computeDensityKernel");
+    launchConfigPressure = CudaUtils::getOptimalConfig(computePressureKernel, numParticles, "computePressureKernel");
+    launchConfigFoce = CudaUtils::getOptimalConfig(computeForcesKernel, numParticles, "computeForcesKernel");
+    launchConfigIntegrate = CudaUtils::getOptimalConfig(integrateKernel, numParticles, "integrateKernel");
 }
 
 ColliderKernel::~ColliderKernel() {
@@ -289,26 +278,26 @@ void ColliderKernel::update(Particle* d_particles,
     float spikyCoeff = -45.0f / (pi * powf(h, 6));
     float viscCoeff = 45.0f / (pi * powf(h, 6));
 
-    computeDensityKernel<<<gridSize_density, blockSize_density>>>(
-        d_particles, m_numParticles, d_gridHead, d_particleNext,
+    computeDensityKernel<<<launchConfigDensity.gridSize, launchConfigDensity.blockSize>>>(
+        d_particles, numParticles, d_gridHead, d_particleNext,
         d_rho, 
         Nx, Ny, Nz, 
         poly6Coeff // Pass coeff as arg, others are in Config
     );
 
-    computePressureKernel<<<gridSize_pressure, blockSize_pressure>>>(
-        d_rho, d_pressure, m_numParticles
+    computePressureKernel<<<launchConfigPressure.gridSize, launchConfigPressure.blockSize>>>(
+        d_rho, d_pressure, numParticles
     );
     
-    computeForcesKernel<<<gridSize_force, blockSize_force>>>(
-        d_particles, m_numParticles, d_gridHead, d_particleNext,
+    computeForcesKernel<<<launchConfigFoce.gridSize, launchConfigFoce.blockSize>>>(
+        d_particles, numParticles, d_gridHead, d_particleNext,
         d_rho, d_pressure, d_fx, d_fy, d_fz,
         Nx, Ny, Nz,
         spikyCoeff, viscCoeff
     );
 
-    integrateKernel<<<gridSize_integrate, blockSize_integrate>>>(
-        d_particles, m_numParticles, d_fx, d_fy, d_fz,
+    integrateKernel<<<launchConfigIntegrate.gridSize, launchConfigIntegrate.blockSize>>>(
+        d_particles, numParticles, d_fx, d_fy, d_fz,
         dt
     );
     

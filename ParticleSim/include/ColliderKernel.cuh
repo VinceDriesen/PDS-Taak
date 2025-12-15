@@ -3,6 +3,7 @@
 
 #include <cuda_runtime.h>
 #include "Particle.h"
+#include "CudaUtils.cuh"
 
 class ColliderKernel {
 public:
@@ -18,12 +19,12 @@ public:
 private:
     float *d_rho, *d_pressure;
     float *d_fx, *d_fy, *d_fz;
-    int m_numParticles;
+    int numParticles;
 
-    int blockSize_density, gridSize_density;
-    int blockSize_pressure, gridSize_pressure;
-    int blockSize_force, gridSize_force;
-    int blockSize_integrate, gridSize_integrate;
+    LaunchConfig launchConfigDensity;
+    LaunchConfig launchConfigPressure;
+    LaunchConfig launchConfigFoce;
+    LaunchConfig launchConfigIntegrate;
 };
 
 #endif // COLLIDER_KERNEL_H
