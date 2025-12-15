@@ -24,7 +24,7 @@ Simulation::Simulation(int N)
 }
 
 // De case 0 is gemaakt mbhv chatGPT
-// Om een spehere the kunnen spawnen van balletjes
+// Om een sphere the kunnen spawnen van balletjes
 // Deze functie leek ons niet heel belangrijk om zelf te schrijven
 void Simulation::initializeParticles(int N) {
   constexpr int index = 0;
@@ -136,20 +136,21 @@ void Simulation::updateGpu(float dt) {
 
   grid_kernel->build(d_particles);
 
-    collider_kernel->update(
-        d_particles, 
-        grid_kernel->getGridHead(),
-        grid_kernel->getParticleNext(),
-        Config::smoothingRadius,     
-        grid_kernel->getNx(),
-        grid_kernel->getNy(), 
-        grid_kernel->getNz(), 
-        dt
-    );
+  collider_kernel->update(
+      d_particles, 
+      grid_kernel->getGridHead(),
+      grid_kernel->getParticleNext(),
+      Config::smoothingRadius,     
+      grid_kernel->getNx(),
+      grid_kernel->getNy(), 
+      grid_kernel->getNz(), 
+      dt
+  );
 
   sm->copyDeviceToHost();
 }
 
+// Run het programma op de CPU, met de gewone Cpp code
 void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
   std::cout << "Running CPU simulation for " << frames << " frames."
             << std::endl;
@@ -167,6 +168,7 @@ void Simulation::runCPU(int frames, float dt, const std::string &outputFolder) {
             << std::endl;
 }
 
+// Run het programma op de GPU, met de CUDA Kernels
 void Simulation::runGPU(int frames, float dt, const std::string &outputFolder,
                         bool doIO) {
   sm = std::make_unique<SimulationKernel>(particles.data(), particles.size());

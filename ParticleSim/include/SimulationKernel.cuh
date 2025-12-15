@@ -2,7 +2,9 @@
 #define SIMULATION_KERNEL_CUH
 
 #include "Particle.h"
+#include "CudaUtils.cuh"
 #include <cuda_runtime.h>
+
 
 struct BoundsCuda {
     float xmin, xmax;
@@ -23,7 +25,7 @@ public:
     SimulationKernel(const SimulationKernel&) = delete;
     SimulationKernel& operator=(const SimulationKernel&) = delete;
 
-    Particle* getDevicePtr() const { return _d_particles; }
+    Particle* getDevicePtr() const { return d_particles; }
 
     void copyDeviceToHost();
     void copyHostToDevice();
@@ -31,13 +33,15 @@ public:
     void simulationUpdate(float dt);
 
 private:
-    Particle* _particles;
-    size_t _numParticles;
-    Particle *_d_particles;
-    BoundsCuda _bounds;
-    ConfigCuda _config;
-    int _gridSize;
-    int _blockSize;
+    Particle* particles;
+    size_t numParticles;
+
+    Particle *d_particles;
+    
+    BoundsCuda bounds;
+    ConfigCuda config;
+
+    LaunchConfig launchConfig;
 };
 
 
