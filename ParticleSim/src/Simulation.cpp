@@ -16,26 +16,24 @@ Simulation::Simulation(int N)
     : grid(Config::diameter, Config::xmin, Config::xmax, Config::ymin,
            Config::ymax, Config::zmin, Config::zmax),
       sm(nullptr), grid_kernel(nullptr), collider_kernel(nullptr) {
-  // Initialize particles
   initializeParticles(N);
 
-  // Create the bounding box
   ExporterVTK::saveBoxVTK("data/bounding_box.vtk", Config::xmin, Config::xmax,
                           Config::ymin, Config::ymax, Config::zmin,
                           Config::zmax);
 }
 
+// De case 0 is gemaakt mbhv chatGPT
+// Om een spehere the kunnen spawnen van balletjes
+// Deze functie leek ons niet heel belangrijk om zelf te schrijven
 void Simulation::initializeParticles(int N) {
   constexpr int index = 0;
   particles.clear();
 
-  // Gebruik iets meer ruimte dan de diameter om explosies bij start te
-  // voorkomen
   float spacing = Config::diameter;
 
   switch (index) {
-  case 0: { // Bolvormige start
-    // Bepaal het midden van de wereld
+  case 0: {
     float cx = (Config::xmax - Config::xmin) / 2.0f;
     float cy = (Config::ymax - Config::ymin) / 2.0f;
     float cz = (Config::zmax - Config::zmin) / 2.0f;
@@ -44,14 +42,12 @@ void Simulation::initializeParticles(int N) {
     float sphereRadius =
         spacing * std::pow((3.0f * N) / (4.0f * M_PI), 1.0f / 3.0f);
 
-    // Bounding box rondom de bol berekenen
     int steps = (int)(sphereRadius / spacing);
 
     for (int i = -steps; i <= steps; i++) {
       for (int j = -steps; j <= steps; j++) {
         for (int k = -steps; k <= steps; k++) {
 
-          // Bereken potentiële positie
           float px = cx + i * spacing;
           float py = cy + j * spacing;
           float pz = cz + k * spacing;
@@ -62,8 +58,6 @@ void Simulation::initializeParticles(int N) {
           if (distSq <= sphereRadius * sphereRadius) {
             Particle p;
 
-            // Voeg een minuscuul beetje ruis toe ("Jitter").
-            // Dit zorgt ervoor dat buren niet meer PRECIES tegenover elkaar
             float jitter = spacing * 0.01f; // 1% variatie
             float rx = ((rand() % 100) / 100.0f - 0.5f) * jitter;
             float ry = ((rand() % 100) / 100.0f - 0.5f) * jitter;
@@ -83,7 +77,7 @@ void Simulation::initializeParticles(int N) {
               << std::endl;
     break;
   }
-  case 1: { // Twee druppels (Test case)
+  case 1: {
     std::vector<std::vector<float>> positions = {
         {Config::xmax / 2, Config::ymax * 0.8f, Config::zmax / 2},
         {Config::xmax / 2, Config::ymax * 0.5f, Config::zmax / 2},
